@@ -1,11 +1,18 @@
-import { useState, useEffect } from 'react';
+import { useMemo } from 'react'
+import { computeCollisions } from '../utils/collision'
 
-export default function useCollisions() {
-  const [pairs, setPairs] = useState([]);
+export function useCollisions(satellites, currentStep) {
+  const threats = useMemo(() => {
+    if (!satellites.length) return []
+    return computeCollisions(satellites, currentStep, 'future')
+  }, [satellites, currentStep])
 
-  useEffect(() => {
-    // placeholder: compute close-approach pairs
-  }, []);
+  const counts = useMemo(() => ({
+    CRITICAL: threats.filter(t => t.risk === 'CRITICAL').length,
+    WARNING:  threats.filter(t => t.risk === 'WARNING').length,
+    WATCH:    threats.filter(t => t.risk === 'WATCH').length,
+    total:    threats.length,
+  }), [threats])
 
-  return pairs;
+  return { threats, counts }
 }
